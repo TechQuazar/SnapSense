@@ -1,4 +1,4 @@
-# Photo Album Application with Intelligent Search
+# SnapSense - Photo Album Application with Intelligent Search
 
 This project implements a serverless **photo album web application** with natural language search capabilities using AWS services like **Lex**, **Rekognition**, **Elasticsearch**, and **S3**. The application allows users to upload, search, and retrieve photos based on detected and custom labels. The demo for this project can be found on this [link](https://www.youtube.com/watch?v=N6xg2Pzn0wI).
 
