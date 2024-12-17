@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create new S3 buckets with restricted access and resolve public policy issues.
+
+Resources:
+  # New S3 Bucket for Storage
+  NewStorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: new-store-a3-photos # New bucket name for storage
+    DeletionPolicy: Retain # Retain the bucket when the stack is removed
+
+  StorageBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref NewStorageBucket # Reference the new bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: RestrictAccessToSpecificIAM
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::982081078287:role/AdminAccess # Replace with a valid IAM role or user ARN
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::new-store-a3-photos/*"
+    DeletionPolicy: Retain # Retain the bucket policy
+
+  # New S3 Bucket for Frontend
+  NewFrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: new-frontend-two # New bucket name for frontend
+    DeletionPolicy: Retain # Retain the bucket when the stack is removed
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref NewFrontendBucket # Reference the new bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: RestrictAccessToSpecificIAM
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::982081078287:role/AdminAccess # Replace with a valid IAM role or user ARN
+            Action: s3:GetObject
+            Resource: !Sub "arn:aws:s3:::new-frontend-two/*"
+    DeletionPolicy: Retain # Retain the bucket policy
+
+  # Lambda Function (Index Photos)
+  IndexPhotosLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: new-index-photos
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: lambda-codes-a3 # New bucket for Lambda function package
+        S3Key: index-photos.zip
+      Runtime: nodejs20.x
+      Timeout: 30
+    DeletionPolicy: Retain # Retain the Lambda function when the stack is deleted
+
+  # Lambda Function (Search Photos)
+  SearchPhotosLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: new-search-photos3
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: lambda-codes-a3 # New bucket for Lambda function package
+        S3Key: search-photos.zip
+      Runtime: nodejs20.x
+      Timeout: 30
+    DeletionPolicy: Retain # Retain the Lambda function when the stack is deleted
+
+  # API Gateway
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: skexxgqztk
+    DeletionPolicy: Retain # Retain the API Gateway when the stack is deleted
+
+  # Lambda Permissions
+  LambdaPermissionIndex:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: index-photos
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*"
+    DeletionPolicy: Retain # Retain the permission when the stack is deleted
+
+  LambdaPermissionSearch:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: search-photos3
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*"
+    DeletionPolicy: Retain # Retain the permission when the stack is deleted
+
+  # Lambda Execution Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecution
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - s3:GetObject
+                Resource: "*"
+    DeletionPolicy: Retain # Retain the role when the stack is deleted

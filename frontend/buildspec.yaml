@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Checking current directory..."
+      - pwd # Print the current working directory
+      - echo "Listing files in the current directory..."
+      - ls -la
+      - echo "Navigating to the frontend directory..."
+      - cd frontend # Ensure you navigate to the frontend directory
+      - echo "Installing dependencies..."
+      - npm install # Install project dependencies
+
+  build:
+    commands:
+      - echo "Building the React app..."
+      - npm run build # Build the React application
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: frontend/build # Specify the `build` directory as the artifact's base

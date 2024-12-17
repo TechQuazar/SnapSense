@@ -1,0 +1,7 @@
+NEW api gateway used. V1.
+
+Permission admin added on get. Both route test on api gateway console work.
+
+(changed to v2. V1 working fine.)
+
+Changed the /search lambda to queryToLex. Enabled Lambda proxy integration.

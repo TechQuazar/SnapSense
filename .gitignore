@@ -1,0 +1,4 @@
+lambda/index-photos/env
+lambda/queryToLex/env
+frontend/node_modules
+frontend/.env
